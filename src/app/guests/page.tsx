@@ -1,77 +1,109 @@
 import { createClient } from "@/lib/supabase/server";
-import { Users, Search } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-export default async function GuestsPage() {
+type Guest = {
+  id: string;
+  full_name: string;
+  city: string | null;
+  notes: string | null;
+  households: { name: string } | { name: string }[] | null;
+};
+
+function householdName(h: Guest["households"]) {
+  if (!h) return "";
+  return Array.isArray(h) ? (h[0]?.name ?? "") : h.name;
+}
+
+export default async function GuestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  const search = (q ?? "").replace(/[,()%]/g, " ").trim();
+
   const supabase = await createClient();
 
   const { count: totalGuests } = await supabase
     .from("guests")
     .select("*", { count: "exact", head: true });
 
-  const { data: sampleGuests } = await supabase
+  let query = supabase
     .from("guests")
     .select("id, full_name, city, notes, households(name)")
-    .limit(8);
+    .order("full_name", { ascending: true })
+    .limit(200);
+
+  if (search) {
+    query = query.or(`full_name.ilike.%${search}%,city.ilike.%${search}%`);
+  }
+
+  const { data, error } = await query;
+  const guests = (data ?? []) as Guest[];
 
   return (
-    <main className="p-4 sm:p-6 space-y-5">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-900 tracking-tight">
-            Guest Directory
-          </h1>
-          <p className="text-sm text-stone-500">
-            {totalGuests ?? 0} total guests invited
-          </p>
-        </div>
-        <div className="p-2.5 rounded-full bg-rose-50 text-rose-700">
-          <Users className="w-5 h-5" />
-        </div>
-      </header>
+    <main className="mx-auto max-w-md px-4 pb-28 pt-8">
+      <h1 className="text-center font-script text-5xl">Guests</h1>
+      <p className="mt-1 text-center font-serif text-lg text-muted-foreground">
+        {totalGuests ?? 0} guests in total
+      </p>
 
-      {/* Mock Search & Filter Bar */}
-      <div className="relative">
-        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+      <form method="get" className="mt-6 flex gap-2">
         <input
           type="search"
-          placeholder="Search by guest or household name..."
-          disabled
-          className="w-full h-11 pl-10 pr-4 rounded-xl border border-stone-200 bg-white text-sm text-stone-900 placeholder:text-stone-400 opacity-80"
+          name="q"
+          defaultValue={search}
+          placeholder="Search by name or city"
+          className="min-h-12 w-full rounded-xl border border-gold/30 bg-cream px-4 text-base outline-none focus:ring-2 focus:ring-gold"
         />
-      </div>
+        <button
+          type="submit"
+          className="min-h-12 rounded-xl bg-ink px-5 text-base text-cream"
+        >
+          Search
+        </button>
+      </form>
 
-      {/* Sample Guest List Preview */}
-      <div className="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100 shadow-xs overflow-hidden">
-        {sampleGuests && sampleGuests.length > 0 ? (
-          sampleGuests.map((guest: any) => (
-            <div key={guest.id} className="p-3.5 flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-stone-900 text-sm">
-                  {guest.full_name}
-                </div>
-                <div className="text-xs text-stone-500">
-                  {guest.households?.name} • {guest.city}
-                </div>
-              </div>
-              {guest.notes && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium">
-                  {guest.notes}
-                </span>
-              )}
-            </div>
-          ))
-        ) : (
-          <div className="p-6 text-center text-sm text-stone-500">
-            No guests found.
-          </div>
-        )}
-      </div>
+      {search && (
+        <p className="mt-3 text-base text-muted-foreground">
+          {guests.length} result{guests.length === 1 ? "" : "s"} for &quot;
+          {search}&quot;
+        </p>
+      )}
 
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800">
-        💡 Full search, multi-city filters, RSVP badges, and Excel import will be enabled in <strong>Phase 4</strong>.
-      </div>
+      {error && (
+        <p className="mt-4 rounded-2xl bg-cream p-4 text-base">
+          Could not load guests: {error.message}
+        </p>
+      )}
+
+      {!error && guests.length === 0 && (
+        <p className="mt-4 rounded-2xl bg-cream p-4 text-base text-muted-foreground">
+          No guests found.
+        </p>
+      )}
+
+      <ul className="mt-4 space-y-3">
+        {guests.map((g) => (
+          <li
+            key={g.id}
+            className="rounded-2xl border border-gold/30 bg-cream p-4 shadow-sm"
+          >
+            <p className="font-serif text-xl">{g.full_name}</p>
+            <p className="text-base text-muted-foreground">
+              {[householdName(g.households), g.city]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+            {g.notes && (
+              <span className="mt-2 inline-block rounded-full bg-lavender px-3 py-1 text-sm">
+                {g.notes}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
