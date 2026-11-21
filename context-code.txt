@@ -1,0 +1,603 @@
+﻿
+===== package.json =====
+
+{
+  "name": "wedding-command-center",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.2",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.5.2",
+    "lucide-react": "^1.77.0",
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "shadcn": "^4.23.0",
+    "tw-animate-css": "^1.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "postcss": "^8.5.33",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5"
+  }
+}
+
+===== postcss.config.mjs =====
+
+const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+
+===== src\app\globals.css =====
+
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Brand palette: use as bg-blush, text-rose, border-gold, etc. */
+@theme {
+  --color-blush: #f5c9cc;
+  --color-rose: #e8b7b3;
+  --color-cream: #fff8f0;
+  --color-sage: #9db59a;
+  --color-sage-light: #bbd3b5;
+  --color-powder: #a9c3da;
+  --color-gold: #c8a45d;
+  --color-peach: #f6cdb0;
+  --color-lavender: #cfc6e8;
+  --color-ink: #1a1616;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-script: var(--font-alex), cursive;
+  --font-serif: var(--font-cormorant), Georgia, serif;
+  --font-heading: var(--font-cormorant), Georgia, serif;
+  --font-mono: var(--font-geist-mono);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* shadcn variables, mapped to the Pastel Garden palette (light theme only) */
+:root {
+  --background:#F5C9CC;
+  --foreground: #1a1616;
+  --card: #fff8f0;
+  --card-foreground: #1a1616;
+  --popover: #fff8f0;
+  --popover-foreground: #1a1616;
+  --primary: #e8b7b3;
+  --primary-foreground: #1a1616;
+  --secondary: #efb9be;
+  --secondary-foreground: #1a1616;
+  --muted: #efb9be;
+  --muted-foreground: #55484a;
+  --accent: #f6cdb0;
+  --accent-foreground: #1a1616;
+  --destructive: #b3261e;
+  --border: #e2b5b5;
+  --input: #e8cfc9;
+  --ring: #c8a45d;
+  --chart-1: #e8b7b3;
+  --chart-2: #9db59a;
+  --chart-3: #a9c3da;
+  --chart-4: #c8a45d;
+  --chart-5: #cfc6e8;
+  --radius: 0.875rem;
+  --sidebar: #fff8f0;
+  --sidebar-foreground: #1a1616;
+  --sidebar-primary: #e8b7b3;
+  --sidebar-primary-foreground: #1a1616;
+  --sidebar-accent: #f6cdb0;
+  --sidebar-accent-foreground: #1a1616;
+  --sidebar-border: #e8cfc9;
+  --sidebar-ring: #c8a45d;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+===== src\app\layout.tsx =====
+
+import type { Metadata, Viewport } from "next";
+import { Alex_Brush, Cormorant_Garamond, Inter } from "next/font/google";
+import { BottomNav } from "@/components/navigation/bottom-nav";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const alexBrush = Alex_Brush({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-alex",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Wedding Command Center",
+  description: "Private family wedding management app",
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#F5C9CC",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html
+      lang="en"
+      className={`${inter.variable} ${alexBrush.variable} ${cormorant.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary/40">
+        <div className="flex-1 max-w-md w-full mx-auto pb-20 sm:pb-24">
+          {children}
+        </div>
+        <BottomNav />
+      </body>
+    </html>
+  );
+}
+
+===== src\app\page.tsx =====
+
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { Calendar, Users, MapPin, ArrowRight } from "lucide-react";
+
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const supabase = await createClient();
+
+  // Fetch logged in user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Fetch functions list
+  const { data: functions } = await supabase
+    .from("functions")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  // Fetch quick stats
+  const { count: householdCount } = await supabase
+    .from("households")
+    .select("*", { count: "exact", head: true });
+
+  const { count: guestCount } = await supabase
+    .from("guests")
+    .select("*", { count: "exact", head: true });
+
+  const { count: deliveredCount } = await supabase
+    .from("kankotri_visits")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "delivered");
+
+  return (
+    <main className="p-4 sm:p-6 space-y-6">
+      {/* Top Header */}
+      <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm text-center">
+        <div className="text-xs font-semibold tracking-widest text-rose-700 uppercase mb-2">
+          || Shree Ganesh Namah ||
+        </div>
+        <h1 className="text-3xl font-extrabold text-stone-900 tracking-tight">
+          [Bride] & [Groom]
+        </h1>
+        <p className="text-sm font-medium text-stone-600 mt-1">
+          Wedding Celebrations 2026
+        </p>
+        <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-center gap-2 text-xs text-stone-500">
+          <span>Signed in as:</span>
+          <span className="font-semibold text-stone-700">{user?.email}</span>
+        </div>
+      </div>
+
+      {/* Quick Summary Counts */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white p-3.5 rounded-2xl border border-stone-200 text-center shadow-xs">
+          <div className="text-2xl font-bold text-stone-900">{guestCount ?? 0}</div>
+          <div className="text-[11px] font-medium text-stone-500 mt-0.5">Guests</div>
+        </div>
+        <div className="bg-white p-3.5 rounded-2xl border border-stone-200 text-center shadow-xs">
+          <div className="text-2xl font-bold text-stone-900">{householdCount ?? 0}</div>
+          <div className="text-[11px] font-medium text-stone-500 mt-0.5">Households</div>
+        </div>
+        <div className="bg-white p-3.5 rounded-2xl border border-stone-200 text-center shadow-xs">
+          <div className="text-2xl font-bold text-rose-700">{deliveredCount ?? 0}</div>
+          <div className="text-[11px] font-medium text-stone-500 mt-0.5">Cards Delivered</div>
+        </div>
+      </div>
+
+      {/* Functions Section */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-bold text-stone-900 px-1">
+          Wedding Functions
+        </h2>
+        <div className="space-y-3">
+          {functions && functions.length > 0 ? (
+            functions.map((fn) => (
+              <Link
+                key={fn.id}
+                href={`/f/${fn.id}`}
+                className="block bg-white p-4 rounded-2xl border border-stone-200 shadow-xs hover:border-rose-300 transition-all active:scale-[0.99]"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-stone-900 text-base">
+                      {fn.name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-xs text-stone-500">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{fn.date}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-stone-500">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span className="truncate max-w-[240px]">{fn.venue}</span>
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-full bg-stone-50 text-stone-400">
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="bg-white p-6 rounded-2xl border border-stone-200 text-center text-sm text-stone-500">
+              No functions configured yet.
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+===== src\app\login\page.tsx =====
+
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Lock, Mail, Loader2 } from "lucide-react";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const supabase = createClient();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorMessage(null);
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) {
+        setErrorMessage(
+          error.message === "Invalid login credentials"
+            ? "Incorrect email or password. Please check your credentials."
+            : error.message
+        );
+        return;
+      }
+
+      if (data.user) {
+        router.push("/");
+        router.refresh();
+      }
+    } catch {
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const inputClass =
+    "h-12 w-full rounded-xl border border-gold/50 bg-white/70 pl-11 pr-4 text-base text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold";
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      {/* Arch card: rose frame around a cream panel */}
+      <div className="w-full max-w-sm rounded-t-full rounded-b-3xl bg-rose p-2 shadow-sm">
+        <div className="rounded-t-full rounded-b-[1.25rem] bg-cream px-6 pb-8 pt-20 sm:px-8">
+          {/* Header */}
+          <div className="mb-6 flex flex-col items-center text-center">
+            <p className="font-serif text-sm font-semibold tracking-wide">
+              || Shree Ganesh Namah ||
+            </p>
+            <h1 className="mt-3 font-script text-5xl leading-tight">
+              Welcome
+            </h1>
+            <div className="my-3 h-px w-24 bg-gold/60" />
+            <p className="font-serif text-lg font-semibold">
+              Wedding Command Center
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Private family portal
+            </p>
+          </div>
+
+          {/* Login form */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            {errorMessage && (
+              <div
+                className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+                role="alert"
+              >
+                {errorMessage}
+              </div>
+            )}
+
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium"
+              >
+                Email address
+              </label>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="family@example.com"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-sm font-medium"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Your password"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-2 flex h-12 w-full items-center justify-center rounded-xl bg-ink text-base font-semibold text-cream shadow-sm transition-colors hover:bg-ink/90 disabled:opacity-60"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Signing in...
+                </span>
+              ) : (
+                "Sign In"
+              )}
+            </button>
+          </form>
+
+          {/* Notice on private signup */}
+          <div className="mt-6 border-t border-gold/40 pt-5 text-center">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Accounts are pre-created for family members. If you need access,
+              please reach out to the wedding organizers.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== src\components\navigation\bottom-nav.tsx =====
+
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, Users, Mail, Receipt, MoreHorizontal } from "lucide-react";
+
+const NAV_ITEMS = [
+  { label: "Home", href: "/", icon: Home },
+  { label: "Guests", href: "/guests", icon: Users },
+  { label: "Kankotri", href: "/kankotri", icon: Mail },
+  { label: "Bills", href: "/bills", icon: Receipt },
+  { label: "More", href: "/more", icon: MoreHorizontal },
+];
+
+export function BottomNav() {
+  const pathname = usePathname();
+
+  // Hide bottom nav on login page
+  if (pathname === "/login") {
+    return null;
+  }
+
+  return (
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-gold/50 bg-cream/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_14px_rgba(26,22,22,0.06)] backdrop-blur-md"
+      aria-label="Main Navigation"
+    >
+      <div className="mx-auto flex h-16 max-w-md items-center justify-around px-2">
+        {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+          const isActive =
+            href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex min-h-[48px] min-w-[48px] flex-1 select-none flex-col items-center justify-center py-1 transition-colors ${
+                isActive
+                  ? "font-semibold text-foreground"
+                  : "font-medium text-muted-foreground hover:text-foreground"
+              }`}
+              aria-current={isActive ? "page" : undefined}
+            >
+              <div
+                className={`rounded-full px-4 py-1 transition-colors ${
+                  isActive ? "bg-rose" : ""
+                }`}
+              >
+                <Icon
+                  className={`h-5 w-5 ${
+                    isActive ? "stroke-[2.25]" : "stroke-[1.75]"
+                  }`}
+                />
+              </div>
+              <span className="mt-0.5 text-xs leading-tight">{label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+===== src\lib\utils.ts =====
+
+export { cn } from "cn"
+app
+components
+config
+lib
+middleware.ts
+app\bills
+app\f
+app\guests
+app\kankotri
+app\login
+app\more
+app\favicon.ico
+app\globals.css
+app\layout.tsx
+app\page.tsx
+app\bills\page.tsx
+app\f\[functionId]
+app\f\[functionId]\page.tsx
+app\guests\page.tsx
+app\kankotri\page.tsx
+app\login\page.tsx
+app\more\logout-button.tsx
+app\more\page.tsx
+components\feedback
+components\navigation
+components\theme
+components\ui
+components\feedback\empty-state.tsx
+components\feedback\error-state.tsx
+components\feedback\loading-state.tsx
+components\navigation\bottom-nav.tsx
+components\ui\button.tsx
+lib\supabase
+lib\utils.ts
+lib\supabase\client.ts
+lib\supabase\middleware.ts
+lib\supabase\server.ts
