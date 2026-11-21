@@ -1,6 +1,27 @@
 import type { Metadata, Viewport } from "next";
+import { Alex_Brush, Cormorant_Garamond, Inter } from "next/font/google";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const alexBrush = Alex_Brush({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-alex",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Wedding Command Center",
@@ -11,9 +32,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#FBE9E7",
+  themeColor: "#F5C9CC",
 };
 
 export default function RootLayout({
@@ -22,8 +42,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-stone-50 text-stone-900 selection:bg-rose-100">
+    <html
+      lang="en"
+      className={`${inter.variable} ${alexBrush.variable} ${cormorant.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary/40">
         <div className="flex-1 max-w-md w-full mx-auto pb-20 sm:pb-24">
           {children}
         </div>
