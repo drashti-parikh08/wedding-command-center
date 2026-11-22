@@ -11,7 +11,7 @@ type Payment = {
   paid_on: string;
   status: string;
   functions: { name: string } | { name: string }[] | null;
-  payment_attachments: { id: string }[] | null;
+  payment_attachments: { id: string; storage_path: string }[] | null;
 };
 
 function fnName(f: Payment["functions"]) {
@@ -34,12 +34,24 @@ export default async function BillsPage() {
   const { data, error } = await supabase
     .from("payments")
     .select(
-      "id, title, payee_text, amount_paise, paid_on, status, functions(name), payment_attachments(id)"
+      "id, title, payee_text, amount_paise, paid_on, status, functions(name), payment_attachments(id, storage_path)"
     )
     .order("created_at", { ascending: false });
 
   const payments = (data ?? []) as unknown as Payment[];
   const total = payments.reduce((sum, p) => sum + Number(p.amount_paise), 0);
+  const paths = payments.flatMap((p) =>
+    (p.payment_attachments ?? []).map((a) => a.storage_path)
+  );
+  const urlMap: Record<string, string> = {};
+  if (paths.length > 0) {
+    const { data: signed } = await supabase.storage
+      .from("receipts")
+      .createSignedUrls(paths, 3600);
+    signed?.forEach((s) => {
+      if (s.path && s.signedUrl) urlMap[s.path] = s.signedUrl;
+    });
+  }
 
   return (
     <main className="mx-auto max-w-md px-4 pb-28 pt-8">
@@ -98,6 +110,24 @@ export default async function BillsPage() {
                   {p.status}
                 </span>
               </div>
+              {(p.payment_attachments ?? []).map((a) =>
+                urlMap[a.storage_path] ? (
+                  <a
+                    key={a.id}
+                    href={urlMap[a.storage_path]}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 block"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={urlMap[a.storage_path]}
+                      alt="Bill photo"
+                      className="max-h-56 w-full rounded-xl border border-gold/30 object-cover"
+                    />
+                  </a>
+                ) : null
+              )}
             </li>
           );
         })}
