@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import AddBillForm from "./add-bill-form";
+import EditBill from "./edit-bill";
 
 export const dynamic = "force-dynamic";
 
@@ -126,8 +127,17 @@ export default async function BillsPage() {
                       className="max-h-56 w-full rounded-xl border border-gold/30 object-cover"
                     />
                   </a>
-                ) : null
+                               ) : null
               )}
+              <EditBill
+                payment={{
+                  id: p.id,
+                  title: p.title,
+                  payee_text: p.payee_text,
+                  amount_paise: Number(p.amount_paise),
+                  status: p.status,
+                }}
+              />
             </li>
           );
         })}
