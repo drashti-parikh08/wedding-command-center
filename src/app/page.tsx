@@ -5,8 +5,8 @@ import { Calendar, PartyPopper } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 // Change these when the real names are decided
-const BRIDE = "[Bride]";
-const GROOM = "[Groom]";
+const BRIDE = "Naman";
+const GROOM = "Samiksha";
 const SUBTITLE = "Wedding Celebrations 2026";
 
 const TILE_COLORS = ["bg-peach", "bg-sage-light", "bg-lavender", "bg-powder"];
