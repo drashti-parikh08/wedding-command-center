@@ -1,111 +1,135 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ArrowLeft, Calendar, MapPin, Users, Receipt } from "lucide-react";
+import { Calendar, MapPin, ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-interface FunctionPageProps {
-  params: Promise<{ functionId: string }>;
+function formatDate(date: string | null) {
+  if (!date) return "Date to be announced";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return date;
+  return d.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
-export default async function FunctionDetailPage({
+function rupees(paise: number) {
+  return "₹" + (paise / 100).toLocaleString("en-IN");
+}
+
+export default async function FunctionPage({
   params,
-}: FunctionPageProps) {
+}: {
+  params: Promise<{ functionId: string }>;
+}) {
   const { functionId } = await params;
   const supabase = await createClient();
 
-  // Fetch function details
-  const { data: fn, error } = await supabase
+  const { data: fn } = await supabase
     .from("functions")
     .select("*")
     .eq("id", functionId)
-    .single();
+    .maybeSingle();
 
-  if (error || !fn) {
-    notFound();
-  }
+  if (!fn) notFound();
 
-  // Count invited guests for this function
-  const { count: invitedCount } = await supabase
+  const { data: fg } = await supabase
     .from("function_guests")
-    .select("*", { count: "exact", head: true })
+    .select("rsvp_status")
     .eq("function_id", functionId);
 
-  // Count confirmed RSVPs
-  const { count: confirmedCount } = await supabase
-    .from("function_guests")
-    .select("*", { count: "exact", head: true })
-    .eq("function_id", functionId)
-    .eq("rsvp_status", "confirmed");
-
-  // Fetch payments for this function
-  const { data: payments } = await supabase
+  const { data: pay } = await supabase
     .from("payments")
-    .select("amount_paise")
-    .eq("function_id", functionId);
+    .select("id, title, payee_text, amount_paise, status")
+    .eq("function_id", functionId)
+    .order("created_at", { ascending: false });
 
-  const totalPaise =
-    payments?.reduce((acc: number, p: any) => acc + Number(p.amount_paise), 0) ?? 0;
-  const formattedExpenses = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(totalPaise / 100);
+  const invited = fg?.length ?? 0;
+  const confirmed = (fg ?? []).filter((g) => g.rsvp_status === "confirmed").length;
+  const bills = pay ?? [];
+  const spent = bills.reduce((sum, p) => sum + Number(p.amount_paise), 0);
+
+  const stats = [
+    { label: "Invited", value: String(invited) },
+    { label: "Confirmed", value: String(confirmed) },
+    { label: "Spent", value: rupees(spent) },
+  ];
 
   return (
-    <main className="p-4 sm:p-6 space-y-5">
-      {/* Back button */}
-      <div>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 min-h-[44px] px-1"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to All Events
-        </Link>
-      </div>
+    <main className="mx-auto max-w-md px-4 pb-28 pt-4">
+      <Link
+        href="/"
+        className="inline-flex min-h-12 items-center gap-1 text-base text-muted-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Home
+      </Link>
 
-      {/* Function Header */}
-      <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm space-y-3">
-        <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-rose-50 text-rose-700">
-          Function Dashboard
-        </span>
-        <h1 className="text-2xl font-bold text-stone-900 tracking-tight">
-          {fn.name}
-        </h1>
-        <div className="space-y-1.5 text-sm text-stone-600 pt-1">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-stone-400" />
-            <span>{fn.date}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-stone-400" />
-            <span>{fn.venue}</span>
-          </div>
-        </div>
-        {fn.notes && (
-          <p className="text-xs text-stone-500 pt-2 border-t border-stone-100">
-            {fn.notes}
+      <div className="rounded-t-full rounded-b-3xl bg-rose p-2">
+        <div className="rounded-t-full rounded-b-[1.25rem] bg-cream px-5 pb-6 pt-16 text-center">
+          <h1 className="font-script text-5xl leading-tight">{fn.name}</h1>
+          <div className="mx-auto my-2 h-px w-20 bg-gold/60" />
+          <p className="flex items-center justify-center gap-1.5 font-serif text-lg">
+            <Calendar className="h-4 w-4" />
+            {formatDate(fn.date)}
           </p>
-        )}
+          {fn.venue && (
+            <p className="mt-1 flex items-center justify-center gap-1.5 text-base text-muted-foreground">
+              <MapPin className="h-4 w-4 shrink-0" />
+              {fn.venue}
+            </p>
+          )}
+          {fn.notes && (
+            <p className="mt-3 text-base text-muted-foreground">{fn.notes}</p>
+          )}
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-2.5">
-        <div className="bg-white p-3.5 rounded-2xl border border-stone-200 text-center shadow-xs">
-          <div className="text-xl font-bold text-stone-900">{invitedCount ?? 0}</div>
-          <div className="text-[11px] font-medium text-stone-500 mt-0.5">Invited</div>
-        </div>
-        <div className="bg-white p-3.5 rounded-2xl border border-stone-200 text-center shadow-xs">
-          <div className="text-xl font-bold text-emerald-700">{confirmedCount ?? 0}</div>
-          <div className="text-[11px] font-medium text-stone-500 mt-0.5">Confirmed</div>
-        </div>
-        <div className="bg-white p-3.5 rounded-2xl border border-stone-200 text-center shadow-xs">
-          <div className="text-base font-bold text-stone-900 truncate">{formattedExpenses}</div>
-          <div className="text-[11px] font-medium text-stone-500 mt-0.5">Expenses</div>
-        </div>
+      <div className="mt-5 grid grid-cols-3 gap-2">
+        {stats.map((s) => (
+          <div
+            key={s.label}
+            className="rounded-2xl border border-gold/30 bg-cream px-2 py-3 text-center shadow-sm"
+          >
+            <p className="font-serif text-2xl leading-none">{s.value}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
+          </div>
+        ))}
       </div>
+
+      <h2 className="mt-6 text-center font-script text-3xl">Bills</h2>
+
+      <ul className="mt-3 space-y-2">
+        {bills.length === 0 && (
+          <li className="rounded-2xl bg-cream p-4 text-center text-base text-muted-foreground">
+            No bills for this function yet.
+          </li>
+        )}
+        {bills.map((p) => (
+          <li
+            key={p.id}
+            className="flex items-start justify-between gap-3 rounded-2xl border border-gold/30 bg-cream p-3 shadow-sm"
+          >
+            <div className="min-w-0">
+              <p className="truncate font-serif text-lg">{p.title}</p>
+              <p className="truncate text-base text-muted-foreground">
+                {p.payee_text} · {p.status}
+              </p>
+            </div>
+            <p className="font-serif text-lg">{rupees(Number(p.amount_paise))}</p>
+          </li>
+        ))}
+      </ul>
+
+      <Link
+        href="/bills"
+        className="mt-4 flex min-h-12 w-full items-center justify-center rounded-xl bg-ink text-base text-cream"
+      >
+        Go to Bills to add one
+      </Link>
     </main>
   );
 }
