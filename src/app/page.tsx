@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // Change these when the real names are decided
 const BRIDE = "Naman";
 const GROOM = "Samiksha";
-const SUBTITLE = "Wedding Celebrations 2026";
+const SUBTITLE = "Wedding Celebrations 2027";
 
 const TILE_COLORS = ["bg-peach", "bg-sage-light", "bg-lavender", "bg-powder"];
 

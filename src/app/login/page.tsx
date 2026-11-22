@@ -61,6 +61,9 @@ export default function LoginPage() {
             <h1 className="mt-3 font-script text-5xl leading-tight">
               Welcome
             </h1>
+            <p className="font-script text-3xl leading-tight">
+              Naman &amp; Samiksha&apos;s Wedding
+            </p>
             <div className="my-3 h-px w-24 bg-gold/60" />
             <p className="font-serif text-lg font-semibold">
               Wedding Command Center
